@@ -468,8 +468,6 @@ name = "medullah-multipart"
 version = "0.1.0"
 dependencies = [
  "futures",
- "futures-util",
- "log",
  "mockall",
  "ntex",
  "ntex-multipart",
