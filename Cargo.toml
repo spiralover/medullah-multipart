@@ -3,6 +3,8 @@ name = "medullah-multipart"
 version = "0.1.0"
 edition = "2021"
 
+publish = ["spiralindex"]
+
 [dependencies]
 ntex = "2.0"
 ntex-multipart = "2.0"
