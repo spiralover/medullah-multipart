@@ -1,0 +1,16 @@
+[package]
+name = "medullah-multipart"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ntex = "2.0"
+ntex-multipart = "2.0"
+futures = "0.3.30"
+futures-util = "0.3.30"
+log = "0.4.22"
+tokio = { version = "1", features = ["fs"] }
+
+[dev-dependencies]
+mockall = { version = "0.12.1" }
+tokio = { version = "1", features = ["full"] }
