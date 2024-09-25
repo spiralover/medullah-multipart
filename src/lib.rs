@@ -1,6 +1,6 @@
-mod uploader;
-mod result;
 mod file;
+mod result;
+mod uploader;
 
 pub use file::FileInfo;
 pub use result::{MultipartError, MultipartValidationError};

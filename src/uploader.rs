@@ -10,9 +10,9 @@ use tokio::fs::File;
 use tokio::io::AsyncWriteExt;
 
 use crate::file::FileInfo;
-use crate::result::{MultipartError, MultipartResult};
 use crate::result::MultipartError::{NotUploaded, ValidationError};
 use crate::result::MultipartValidationError::{InvalidMimeType, LowerSizeError, UpperSizeError};
+use crate::result::{MultipartError, MultipartResult};
 
 pub struct Uploader {
     multipart: NtexMultipart,
@@ -41,7 +41,11 @@ impl<Err> FromRequest<Err> for Uploader {
 
 impl<'a> Uploader {
     pub async fn new(multipart: NtexMultipart) -> Uploader {
-        Self { multipart, bytes: vec![], file: FileInfo::default() }
+        Self {
+            multipart,
+            bytes: vec![],
+            file: FileInfo::default(),
+        }
     }
 
     pub async fn capture(&mut self, field: &str) -> Result<&mut Uploader, MultipartError> {
@@ -50,10 +54,14 @@ impl<'a> Uploader {
             lower_size: 0,
             upper_size: None,
             allowed_mimes: vec![],
-        }).await
+        })
+        .await
     }
 
-    pub async fn capture_advance(&mut self, ud: UploadData<'a>) -> Result<&mut Uploader, MultipartError> {
+    pub async fn capture_advance(
+        &mut self,
+        ud: UploadData<'a>,
+    ) -> Result<&mut Uploader, MultipartError> {
         while let Some(item) = self.multipart.next().await {
             let mut field = match item {
                 Ok(item) => item,
@@ -130,8 +138,19 @@ mod tests {
 
     fn generate_headers(field: &str, filename: &str, content_type: &str) -> HeaderMap {
         let mut headers = HeaderMap::new();
-        headers.insert("content-disposition".parse().unwrap(), format!("form-data; app=\"naira\"; name=\"{}\"; filename=\"{}\"", field, filename).parse().unwrap());
-        headers.insert("content-type".parse().unwrap(), content_type.parse().unwrap());
+        headers.insert(
+            "content-disposition".parse().unwrap(),
+            format!(
+                "form-data; app=\"naira\"; name=\"{}\"; filename=\"{}\"",
+                field, filename
+            )
+            .parse()
+            .unwrap(),
+        );
+        headers.insert(
+            "content-type".parse().unwrap(),
+            content_type.parse().unwrap(),
+        );
         headers
     }
 }

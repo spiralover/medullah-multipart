@@ -57,18 +57,20 @@ impl FileInfo {
     fn get_content_type(headers: &HeaderMap) -> MultipartResult<String> {
         match headers.get("content-type") {
             None => Err(MultipartError::InvalidContentType),
-            Some(header) => header.to_str()
+            Some(header) => header
+                .to_str()
                 .map(|v| v.to_string())
-                .map_err(|_| MultipartError::InvalidContentType)
+                .map_err(|_| MultipartError::InvalidContentType),
         }
     }
 
     fn get_content_disposition(headers: &HeaderMap) -> MultipartResult<String> {
         match headers.get("content-disposition") {
             None => Err(MultipartError::InvalidContentDisposition),
-            Some(header) => header.to_str()
+            Some(header) => header
+                .to_str()
                 .map(|v| v.to_string())
-                .map_err(|_| MultipartError::InvalidContentDisposition)
+                .map_err(|_| MultipartError::InvalidContentDisposition),
         }
     }
 }
@@ -82,13 +84,12 @@ mod tests {
     #[tokio::test]
     async fn test_create_from_valid_headers() {
         let mut headers = HeaderMap::new();
-        headers.insert(
-            CONTENT_TYPE,
-            "image/jpeg".parse().unwrap(),
-        );
+        headers.insert(CONTENT_TYPE, "image/jpeg".parse().unwrap());
         headers.insert(
             CONTENT_DISPOSITION,
-            "form-data; name=\"image\"; filename=\"image.jpg\"".parse().unwrap(),
+            "form-data; name=\"image\"; filename=\"image.jpg\""
+                .parse()
+                .unwrap(),
         );
 
         let file_info = FileInfo::create(&headers).unwrap();
@@ -111,14 +112,8 @@ mod tests {
     #[tokio::test]
     async fn test_create_from_invalid_content_disposition() {
         let mut headers = HeaderMap::new();
-        headers.insert(
-            CONTENT_TYPE,
-            "image/jpeg".parse().unwrap(),
-        );
-        headers.insert(
-            CONTENT_DISPOSITION,
-            "invalid".parse().unwrap(),
-        );
+        headers.insert(CONTENT_TYPE, "image/jpeg".parse().unwrap());
+        headers.insert(CONTENT_DISPOSITION, "invalid".parse().unwrap());
 
         assert!(matches!(
             FileInfo::create(&headers),
