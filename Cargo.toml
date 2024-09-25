@@ -1,6 +1,6 @@
 [package]
 name = "medullah-multipart"
-version = "0.1.1"
+version = "0.2.0"
 edition = "2021"
 
 publish = ["spiralindex"]
@@ -8,9 +8,8 @@ publish = ["spiralindex"]
 [dependencies]
 futures = "0.3.30"
 ntex-multipart = "2.0"
-tokio = { version = "1", default-features = false, features = ["fs", "io-util"] }
-ntex = { version = "2.0", default-features = false }
+tokio = { version = "1.40", default-features = false, features = ["fs", "io-util"] }
+ntex = { version = "2.6", default-features = false }
 
 [dev-dependencies]
-mockall = { version = "0.12.1" }
 tokio = { version = "1", features = ["full"] }
