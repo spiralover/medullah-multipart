@@ -2,6 +2,9 @@
 name = "medullah-multipart"
 version = "0.2.0"
 edition = "2021"
+license = "MIT"
+description = "Library For Handling File Uploads Based on Ntex"
+repository = "https://github.com/spiralover/medullah-multipart"
 
 [dependencies]
 futures = "0.3.30"
