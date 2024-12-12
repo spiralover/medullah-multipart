@@ -10,7 +10,7 @@ repository = "https://github.com/spiralover/medullah-multipart"
 futures = "0.3"
 ntex-multipart = "2.0"
 tokio = { version = "1.42", default-features = false, features = ["fs", "io-util"] }
-ntex = { version = "2.10", default-features = false }
+ntex = { version = "2.10", default-features = false, features = ["tokio"] }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["full"] }

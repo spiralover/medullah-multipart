@@ -650,6 +650,7 @@ dependencies = [
  "ntex-io",
  "ntex-rt",
  "ntex-service",
+ "ntex-tokio",
  "ntex-util",
  "thiserror",
 ]
@@ -677,6 +678,7 @@ dependencies = [
  "futures-core",
  "log",
  "oneshot",
+ "tokio",
 ]
 
 [[package]]
@@ -721,6 +723,20 @@ dependencies = [
  "ntex-net",
  "ntex-service",
  "ntex-util",
+]
+
+[[package]]
+name = "ntex-tokio"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c41ff5282a2912445e9fcf0c751b8c71edefa803bf71478515c8600f4e3e8853"
+dependencies = [
+ "log",
+ "ntex-bytes",
+ "ntex-io",
+ "ntex-rt",
+ "ntex-util",
+ "tokio",
 ]
 
 [[package]]
