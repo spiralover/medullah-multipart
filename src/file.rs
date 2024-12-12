@@ -21,7 +21,9 @@ impl FileInfo {
 
         let variables = Self::parse_content_disposition(&content_disposition);
         if !variables.contains_key("name") || !variables.contains_key("filename") {
-            return Err(MultipartError::InvalidContentDisposition(content_disposition.to_string()));
+            return Err(MultipartError::InvalidContentDisposition(
+                content_disposition.to_string(),
+            ));
         }
 
         let field = variables.get("name").cloned().unwrap();
@@ -56,7 +58,9 @@ impl FileInfo {
 
     fn get_content_type(headers: &HeaderMap) -> MultipartResult<String> {
         match headers.get("content-type") {
-            None => Err(MultipartError::NoContentType("Empty content type".to_string())),
+            None => Err(MultipartError::NoContentType(
+                "Empty content type".to_string(),
+            )),
             Some(header) => header
                 .to_str()
                 .map(|v| v.to_string())
@@ -66,7 +70,9 @@ impl FileInfo {
 
     fn get_content_disposition(headers: &HeaderMap) -> MultipartResult<String> {
         match headers.get("content-disposition") {
-            None => Err(MultipartError::InvalidContentDisposition("Empty content disposition".to_string())),
+            None => Err(MultipartError::InvalidContentDisposition(
+                "Empty content disposition".to_string(),
+            )),
             Some(header) => header
                 .to_str()
                 .map(|v| v.to_string())
