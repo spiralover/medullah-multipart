@@ -10,7 +10,7 @@ use tokio::fs::File;
 use tokio::io::AsyncWriteExt;
 
 use crate::file::FileInfo;
-use crate::result::MultipartError::{NotUploaded, ValidationError};
+use crate::result::MultipartError::{NoFile, ValidationError};
 use crate::result::MultipartValidationError::{InvalidMimeType, LowerSizeError, UpperSizeError};
 use crate::result::{MultipartError, MultipartResult};
 
@@ -71,7 +71,7 @@ impl<'a> Uploader {
             let mut info = FileInfo::create(field.headers())?;
             if info.field == ud.field {
                 if ud.allowed_mimes.contains(&&*info.content_type) {
-                    return Err(ValidationError(InvalidMimeType));
+                    return Err(ValidationError(InvalidMimeType(info.content_type)));
                 }
 
                 let mut total_size = 0;
@@ -80,15 +80,17 @@ impl<'a> Uploader {
                     let data = chunk.unwrap();
                     total_size += data.len();
 
-                    if ud.upper_size.is_some() && total_size > ud.upper_size.unwrap() {
-                        return Err(ValidationError(UpperSizeError));
+                    if let Some(size) = ud.upper_size {
+                        if total_size > ud.upper_size.unwrap() {
+                            return Err(ValidationError(UpperSizeError(size)));
+                        }
+                    }
+
+                    if total_size < ud.lower_size {
+                        return Err(ValidationError(LowerSizeError(ud.lower_size)));
                     }
 
                     bytes.push(data);
-                }
-
-                if total_size < ud.lower_size {
-                    return Err(ValidationError(LowerSizeError));
                 }
 
                 info.size = total_size;
@@ -99,7 +101,7 @@ impl<'a> Uploader {
             }
         }
 
-        Err(NotUploaded)
+        Err(NoFile)
     }
 
     pub async fn save<P: AsRef<Path>>(&self, path: &P) -> MultipartResult<()> {
