@@ -70,7 +70,7 @@ impl<'a> Uploader {
 
             let mut info = FileInfo::create(field.headers())?;
             if info.field == ud.field {
-                if ud.allowed_mimes.contains(&&*info.content_type) {
+                if !ud.allowed_mimes.contains(&&*info.content_type) {
                     return Err(ValidationError(InvalidMimeType(info.content_type)));
                 }
 
