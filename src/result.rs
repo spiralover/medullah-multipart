@@ -15,9 +15,10 @@ pub enum MultipartError {
 
 #[derive(Debug)]
 pub enum MultipartValidationError {
-    LowerSizeError(usize),
-    UpperSizeError(usize),
-    InvalidMimeType(String),
+    FileTooSmall(usize),
+    FileTooLarge(usize),
+    InvalidFileExtension(Option<String>),
+    InvalidContentType(String),
 }
 
 impl From<Error> for MultipartError {
@@ -45,13 +46,16 @@ impl Display for MultipartError {
                 write!(f, "{}", err)
             }
             MultipartError::ValidationError(err) => match err {
-                MultipartValidationError::LowerSizeError(size) => {
+                MultipartValidationError::FileTooSmall(size) => {
                     write!(f, "File size is too small. Minimum size is {}", size)
                 }
-                MultipartValidationError::UpperSizeError(size) => {
+                MultipartValidationError::FileTooLarge(size) => {
                     write!(f, "File size is too big. Maximum size is {}", size)
                 }
-                MultipartValidationError::InvalidMimeType(mime) => {
+                MultipartValidationError::InvalidFileExtension(ext) => {
+                    write!(f, "Invalid file extension: {:?}", ext)
+                }
+                MultipartValidationError::InvalidContentType(mime) => {
                     write!(f, "Invalid mime type: {}", mime)
                 }
             },

@@ -1,15 +1,15 @@
-use std::path::Path;
 use crate::content_disposition::ContentDisposition;
 use crate::result::{MultipartError, MultipartResult};
+use crate::{FileValidationRules, Multipart};
 use ntex::http::HeaderMap;
 use ntex::util::Bytes;
-use crate::Multipart;
+use std::path::Path;
 
 #[derive(Debug, Default, Clone)]
 pub struct FileInput {
     pub file_name: String,
     pub field_name: String,
-    pub size: usize,  // Size in bytes
+    pub size: usize, // Size in bytes
     pub content_type: String,
     pub bytes: Vec<Bytes>,
     pub extension: Option<String>,
@@ -42,6 +42,12 @@ impl FileInput {
     // Save the file to the specified path
     pub async fn save(&self, path: impl AsRef<Path>) -> MultipartResult<()> {
         Multipart::save_file(self, path).await
+    }
+
+    pub fn validate(&self, rules: FileValidationRules) -> MultipartResult<()> {
+        rules
+            .validate(self)
+            .map_err(|e| MultipartError::ValidationError(e))
     }
 
     /// Calculate the file size from bytes collected
@@ -94,7 +100,7 @@ mod tests {
     #[test]
     fn test_human_readable_size() {
         let file_input = FileInput {
-            size: 1048576, // 1 MB in bytes
+            size: 1048576,                                  // 1 MB in bytes
             bytes: vec![Bytes::from_static(&[0; 1048576])], // Mock 1MB data
             ..Default::default()
         };
@@ -103,7 +109,7 @@ mod tests {
         assert_eq!(file_input.human_size(), "1.00 MB");
 
         let file_input = FileInput {
-            size: 1572864, // 1.5 MB in bytes
+            size: 1572864,                                  // 1.5 MB in bytes
             bytes: vec![Bytes::from_static(&[0; 1572864])], // Mock 1MB data
             ..Default::default()
         };
@@ -112,7 +118,7 @@ mod tests {
         assert_eq!(file_input.human_size(), "1.50 MB");
 
         let file_input = FileInput {
-            size: 102400, // 100 KB in bytes
+            size: 102400,                                  // 100 KB in bytes
             bytes: vec![Bytes::from_static(&[0; 102400])], // Mock 100KB data
             ..Default::default()
         };
@@ -121,7 +127,7 @@ mod tests {
         assert_eq!(file_input.human_size(), "100.00 KB");
 
         let file_input = FileInput {
-            size: 1014, // 1234 bytes
+            size: 1014,                                  // 1234 bytes
             bytes: vec![Bytes::from_static(&[0; 1014])], // Mock 1014 bytes
             ..Default::default()
         };
@@ -130,15 +136,14 @@ mod tests {
         assert_eq!(file_input.human_size(), "1014 bytes");
     }
 
-
     // Test for `calculate_size`
     #[test]
     fn test_calculate_size() {
         let file_input = FileInput {
             bytes: vec![
-                Bytes::from_static(&[0; 1024]),  // 1 KB
-                Bytes::from_static(&[0; 2048]),  // 2 KB
-                Bytes::from_static(&[0; 4096]),  // 4 KB
+                Bytes::from_static(&[0; 1024]), // 1 KB
+                Bytes::from_static(&[0; 2048]), // 2 KB
+                Bytes::from_static(&[0; 4096]), // 4 KB
             ],
             ..Default::default()
         };
