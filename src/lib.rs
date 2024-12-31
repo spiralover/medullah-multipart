@@ -1,9 +1,10 @@
-mod file_input;
-mod result;
-mod multipart;
-mod data_input;
 mod content_disposition;
+mod data_input;
+mod file_input;
+mod multipart;
+mod result;
 
+pub use data_input::DataInput;
 pub use file_input::FileInput;
-pub use result::{MultipartError, MultipartValidationError};
 pub use multipart::Multipart;
+pub use result::{MultipartError, MultipartValidationError};
