@@ -108,17 +108,14 @@ impl<'a> Multipart {
         value
     }
 
-    pub async fn save<P: AsRef<Path>>(&self, field: &str, path: &P) -> MultipartResult<()> {
+    pub async fn save(&self, field: &str, path: impl AsRef<Path>) -> MultipartResult<()> {
         match self.file(field) {
             Some(f) => Self::save_file(f, path).await,
             None => Err(MultipartError::NoFile),
         }
     }
 
-    pub async fn save_file<P: AsRef<Path>>(
-        file_input: &FileInput,
-        path: &P,
-    ) -> MultipartResult<()> {
+    pub async fn save_file(file_input: &FileInput, path: impl AsRef<Path>) -> MultipartResult<()> {
         let mut file = File::create(path).await?;
 
         for byte in &file_input.bytes {
