@@ -47,7 +47,7 @@ impl FileInput {
     pub fn validate(&self, rules: FileValidationRules) -> MultipartResult<()> {
         rules
             .validate(self)
-            .map_err(|e| MultipartError::ValidationError(e))
+            .map_err(MultipartError::ValidationError)
     }
 
     /// Calculate the file size from bytes collected
