@@ -1,0 +1,153 @@
+use std::convert::Infallible;
+use std::path::Path;
+
+use crate::content_disposition::ContentDisposition;
+use crate::data_input::DataInput;
+use crate::file_input::FileInput;
+use crate::result::{MultipartError, MultipartResult};
+use futures::StreamExt;
+use ntex::http::Payload;
+use ntex::util::{Bytes, HashMap};
+use ntex::web::{FromRequest, HttpRequest};
+use ntex_multipart::Multipart as NtexMultipart;
+use tokio::fs::File;
+use tokio::io::AsyncWriteExt;
+
+pub struct Multipart {
+    multipart: NtexMultipart,
+    file_inputs: HashMap<String, FileInput>, // Store all files
+    data_inputs: HashMap<String, DataInput>, // Store all non-file form fields
+}
+
+impl<Err> FromRequest<Err> for Multipart {
+    type Error = Infallible;
+
+    async fn from_request(
+        req: &HttpRequest,
+        payload: &mut Payload,
+    ) -> Result<Multipart, Infallible> {
+        let multipart = NtexMultipart::new(req.headers(), payload.take());
+        Ok(Multipart::new(multipart).await)
+    }
+}
+
+impl<'a> Multipart {
+    pub async fn new(multipart: NtexMultipart) -> Multipart {
+        Self {
+            multipart,
+            file_inputs: Default::default(),
+            data_inputs: Default::default(),
+        }
+    }
+
+    pub async fn process(&mut self) -> Result<&mut Multipart, MultipartError> {
+        while let Some(item) = self.multipart.next().await {
+            let mut field = match item {
+                Ok(item) => item,
+                Err(err) => {
+                    println!(">>>>>>>>>>>>>>>>>>>>>>>>>>>");
+                    println!("Error: {:?}", err.to_string());
+                    println!("<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+                    return Err(MultipartError::NtexError(err))
+                },
+            };
+
+            if let Some(content_disposition) = field.headers().get("content-disposition") {
+                let content_disposition = content_disposition.to_str().ok();
+                if let Some(content_disposition) = content_disposition {
+                    let content_disposition = ContentDisposition::create(content_disposition);
+
+                    if !content_disposition.has_name_field() {
+                        continue;
+                    }
+
+                    // Process form fields (non-file fields)
+                    if !content_disposition.is_file_field() {
+                        let value = self.collect_data_field_value(&mut field).await;
+                        let field_name =
+                            content_disposition.get_variable("name").unwrap_or_default();
+
+                        self.data_inputs.insert(
+                            field_name.to_string(),
+                            DataInput {
+                                value,
+                                name: field_name.to_string(),
+                                content_type: field.content_type().to_string(),
+                                content_disposition_vars: content_disposition
+                                    .get_variables()
+                                    .clone(),
+                            },
+                        );
+
+                        continue;
+                    }
+
+                    // Process file fields
+                    let mut info = FileInput::create(field.headers())?;
+                    let mut total_size = 0;
+                    let mut bytes: Vec<Bytes> = vec![];
+                    while let Some(chunk) = field.next().await {
+                        let data = chunk.unwrap();
+                        total_size += data.len();
+                        bytes.push(data);
+                    }
+
+                    info.size = total_size;
+                    info.bytes = bytes;
+                    self.file_inputs.insert(info.field_name.clone(), info);
+                }
+            }
+        }
+
+        Ok(self)
+    }
+
+    async fn collect_data_field_value(&self, field: &mut ntex_multipart::Field) -> String {
+        let mut value = String::new();
+        while let Some(chunk) = field.next().await {
+            if let Ok(chunk_data) = chunk {
+                value.push_str(&String::from_utf8_lossy(&chunk_data));
+            }
+        }
+
+        value
+    }
+
+    pub async fn save<P: AsRef<Path>>(&self, field: &str, path: &P) -> MultipartResult<()> {
+        match self.file(field) {
+            Some(f) => Self::save_file(f, path).await,
+            None => Err(MultipartError::NoFile),
+        }
+    }
+
+    pub async fn save_file<P: AsRef<Path>>(
+        file_input: &FileInput,
+        path: &P,
+    ) -> MultipartResult<()> {
+        let mut file = File::create(path).await?;
+
+        for byte in &file_input.bytes {
+            file.write_all(byte).await?;
+        }
+
+        file.flush().await?;
+
+        Ok(())
+    }
+
+    pub fn all_data_inputs(&self) -> &HashMap<String, DataInput> {
+        &self.data_inputs
+    }
+
+    pub fn data_input(&self, field: &str) -> Option<&DataInput> {
+        self.data_inputs.get(field)
+    }
+
+    pub fn all_files(&self) -> &HashMap<String, FileInput> {
+        &self.file_inputs
+    }
+
+    pub fn file(&self, field: &str) -> Option<&FileInput> {
+        self.file_inputs.get(field)
+    }
+}

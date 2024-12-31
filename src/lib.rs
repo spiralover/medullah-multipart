@@ -1,7 +1,9 @@
-mod file;
+mod file_input;
 mod result;
-mod uploader;
+mod multipart;
+mod data_input;
+mod content_disposition;
 
-pub use file::FileInfo;
+pub use file_input::FileInput;
 pub use result::{MultipartError, MultipartValidationError};
-pub use uploader::{UploadData, Uploader};
+pub use multipart::Multipart;
