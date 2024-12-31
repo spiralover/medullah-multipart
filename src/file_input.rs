@@ -90,7 +90,7 @@ impl FileInput {
 mod tests {
     use super::*;
 
-    // Test for `get_human_readable_size`
+    // Test for `human_size`
     #[test]
     fn test_human_readable_size() {
         let file_input = FileInput {
@@ -100,7 +100,7 @@ mod tests {
         };
 
         // Test for 1 MB
-        assert_eq!(file_input.get_human_readable_size(), "1.00 MB");
+        assert_eq!(file_input.human_size(), "1.00 MB");
 
         let file_input = FileInput {
             size: 1572864, // 1.5 MB in bytes
@@ -109,7 +109,7 @@ mod tests {
         };
 
         // Test for 1.5 MB
-        assert_eq!(file_input.get_human_readable_size(), "1.50 MB");
+        assert_eq!(file_input.human_size(), "1.50 MB");
 
         let file_input = FileInput {
             size: 102400, // 100 KB in bytes
@@ -118,7 +118,7 @@ mod tests {
         };
 
         // Test for 100 KB (100.00 KB)
-        assert_eq!(file_input.get_human_readable_size(), "100.00 KB");
+        assert_eq!(file_input.human_size(), "100.00 KB");
 
         let file_input = FileInput {
             size: 1014, // 1234 bytes
@@ -127,7 +127,7 @@ mod tests {
         };
 
         // Test for bytes (1014 bytes)
-        assert_eq!(file_input.get_human_readable_size(), "1014 bytes");
+        assert_eq!(file_input.human_size(), "1014 bytes");
     }
 
 
