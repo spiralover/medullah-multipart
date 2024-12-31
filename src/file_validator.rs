@@ -3,9 +3,9 @@ use crate::{FileInput, MultipartValidationError};
 // Struct for File Validation Rules
 #[derive(Debug, Default)]
 pub struct FileValidationRules {
-    pub min_size: Option<usize>,                    // Min file size in bytes
-    pub max_size: Option<usize>,                    // Max file size in bytes
-    pub allowed_extensions: Option<Vec<&'static str>>,    // Allowed file extensions
+    pub min_size: Option<usize>, // Min file size in bytes
+    pub max_size: Option<usize>, // Max file size in bytes
+    pub allowed_extensions: Option<Vec<&'static str>>, // Allowed file extensions
     pub allowed_content_types: Option<Vec<&'static str>>, // Allowed content types
 }
 
