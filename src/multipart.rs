@@ -179,8 +179,8 @@ impl<'a> Multipart {
 mod test {
     use crate::data_input::DataInput;
     use crate::file_input::FileInput;
-    use crate::{FileRules, Multipart};
     use crate::file_validator::Validator;
+    use crate::{FileRules, Multipart};
     use ntex::http::{HeaderMap, Payload};
     use ntex::util::Bytes;
     use ntex_multipart::Multipart as NtexMultipart;
@@ -304,11 +304,14 @@ mod test {
         let mut multipart_instance = Multipart::new(multipart).await;
 
         // No files added, so validation should fail
-        let validator = Validator::new().add_rule("file1", FileRules {
-            min_files: Some(1),
-            max_files: Some(5),
-            ..Default::default()
-        });
+        let validator = Validator::new().add_rule(
+            "file1",
+            FileRules {
+                min_files: Some(1),
+                max_files: Some(5),
+                ..Default::default()
+            },
+        );
 
         let result = multipart_instance.validate(validator).await;
 
