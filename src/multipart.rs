@@ -123,20 +123,29 @@ impl<'a> Multipart {
     }
 
     /// Get all data inputs
-    pub fn all_data_inputs(&self) -> &HashMap<String, Vec<DataInput>> {
+    pub fn all_data(&self) -> &HashMap<String, Vec<DataInput>> {
         &self.data_inputs
     }
 
     /// Get a data input for a given field
-    pub fn data_input(&self, field: &str) -> Option<&Vec<DataInput>> {
+    pub fn data(&self, field: &str) -> Option<&Vec<DataInput>> {
         self.data_inputs.get(field)
     }
 
     /// Get the first data input for a given field
-    pub fn first_data_input(&self, field: &str) -> Option<&DataInput> {
+    pub fn first_data(&self, field: &str) -> Option<&DataInput> {
         self.data_inputs
             .get(field)
             .and_then(|inputs| inputs.first())
+    }
+
+    /// Get the first data input for a given field.
+    /// Returns an error if the field is not found
+    pub fn first_data_required(&self, field: &str) -> MultipartResult<&DataInput> {
+        self.data_inputs
+            .get(field)
+            .and_then(|inputs| inputs.first())
+            .ok_or(MultipartError::MissingDataField(field.to_string()))
     }
 
     /// Get all files
@@ -186,7 +195,7 @@ mod test {
 
         let multipart_instance = Multipart::new(multipart).await;
 
-        assert!(multipart_instance.all_data_inputs().is_empty());
+        assert!(multipart_instance.all_data().is_empty());
         assert!(multipart_instance.all_files().is_empty());
     }
 
@@ -242,7 +251,7 @@ mod test {
             });
 
         // Verify multiple data entries for the same field
-        assert_eq!(multipart_instance.data_input("key1").unwrap().len(), 2);
+        assert_eq!(multipart_instance.data("key1").unwrap().len(), 2);
     }
 
     // Test 4: Test adding multiple files for the same field
@@ -342,7 +351,7 @@ mod test {
             });
 
         // Test first data input
-        let first_data = multipart_instance.first_data_input("key1");
+        let first_data = multipart_instance.first_data("key1");
         assert_eq!(first_data.unwrap().value, "value1");
 
         // Test first file input
