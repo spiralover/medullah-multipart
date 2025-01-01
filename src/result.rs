@@ -1,3 +1,5 @@
+use crate::file_validator::{ErrorMessage, InputError};
+use crate::FileInput;
 use std::fmt::{Display, Formatter};
 use std::io::Error;
 
@@ -10,15 +12,7 @@ pub enum MultipartError {
     NoContentType(String),
     InvalidContentDisposition(String),
     NtexError(ntex_multipart::MultipartError),
-    ValidationError(MultipartValidationError),
-}
-
-#[derive(Debug)]
-pub enum MultipartValidationError {
-    FileTooSmall(usize),
-    FileTooLarge(usize),
-    InvalidFileExtension(Option<String>),
-    InvalidContentType(String),
+    ValidationError(InputError),
 }
 
 impl From<Error> for MultipartError {
@@ -45,20 +39,55 @@ impl Display for MultipartError {
             MultipartError::NtexError(err) => {
                 write!(f, "{}", err)
             }
-            MultipartError::ValidationError(err) => match err {
-                MultipartValidationError::FileTooSmall(size) => {
-                    write!(f, "File size is too small. Minimum size is {}", size)
+            MultipartError::ValidationError(err) => {
+                let field_name = err.name.clone().replace("_", " ");
+                match err.error.clone() {
+                    ErrorMessage::NoFiles => {
+                        write!(f, "No files were uploaded for field: '{field_name}'")
+                    }
+                    ErrorMessage::FileTooSmall(size) => {
+                        write!(
+                            f,
+                            "File size is too small for field '{field_name}'. Minimum size is {}",
+                            FileInput::format_size(size)
+                        )
+                    }
+                    ErrorMessage::FileTooLarge(size) => {
+                        write!(
+                            f,
+                            "File size is too big for field '{field_name}'. Maximum size is {}",
+                            FileInput::format_size(size)
+                        )
+                    }
+                    ErrorMessage::TooFewFiles(count) => {
+                        write!(
+                            f,
+                            "Too few files uploaded for field '{field_name}'. Minimum is {}",
+                            count
+                        )
+                    }
+                    ErrorMessage::TooManyFiles(count) => {
+                        write!(
+                            f,
+                            "Too many files uploaded for field '{field_name}'. Maximum is {}",
+                            count
+                        )
+                    }
+                    ErrorMessage::InvalidFileExtension(ext) => {
+                        write!(
+                            f,
+                            "Invalid file extension for field '{field_name}': .{}",
+                            ext.clone().unwrap_or_default()
+                        )
+                    }
+                    ErrorMessage::InvalidContentType(mime) => {
+                        write!(f, "Invalid mime type: {}", mime)
+                    }
+                    ErrorMessage::MissingFileExtension(mime) => {
+                        write!(f, "Invalid file, file extension is required: {}", mime)
+                    }
                 }
-                MultipartValidationError::FileTooLarge(size) => {
-                    write!(f, "File size is too big. Maximum size is {}", size)
-                }
-                MultipartValidationError::InvalidFileExtension(ext) => {
-                    write!(f, "Invalid file extension: {:?}", ext)
-                }
-                MultipartValidationError::InvalidContentType(mime) => {
-                    write!(f, "Invalid mime type: {}", mime)
-                }
-            },
+            }
         }
     }
 }
