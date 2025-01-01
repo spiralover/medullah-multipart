@@ -25,15 +25,6 @@ pub struct Validator {
     rules: HashMap<String, FileRules>,
 }
 
-#[derive(Debug, Default, Clone)]
-pub struct RequestRules {
-    /// Min number of files, this only works when validating through `Multipart` struct
-    pub min_files: Option<usize>,
-
-    /// Max number of files, this only works when validating through `Multipart` struct
-    pub max_files: Option<usize>,
-}
-
 // Struct for File Validation Rules
 #[derive(Debug, Default, Clone)]
 pub struct FileRules {
