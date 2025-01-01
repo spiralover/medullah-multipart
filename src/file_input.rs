@@ -1,8 +1,10 @@
 use crate::content_disposition::ContentDisposition;
+use crate::file_validator::Validator;
 use crate::result::{MultipartError, MultipartResult};
-use crate::{FileValidationRules, Multipart};
+use crate::{FileRules, Multipart};
 use ntex::http::HeaderMap;
 use ntex::util::Bytes;
+use std::collections::HashMap;
 use std::path::Path;
 
 #[derive(Debug, Default, Clone)]
@@ -44,10 +46,13 @@ impl FileInput {
         Multipart::save_file(self, path).await
     }
 
-    pub fn validate(&self, rules: FileValidationRules) -> MultipartResult<()> {
-        rules
-            .validate(self)
-            .map_err(MultipartError::ValidationError)
+    pub fn validate(&self, rules: FileRules) -> MultipartResult<()> {
+        let mut files = HashMap::new();
+        files.insert(self.field_name.clone(), vec![self.clone()]);
+
+        Validator::new()
+            .add_rule(&self.field_name, rules)
+            .validate(&files)
     }
 
     /// Calculate the file size from bytes collected
@@ -75,7 +80,7 @@ impl FileInput {
     }
 
     // Helper function to format size in bytes to a human-readable string
-    fn format_size(size_in_bytes: usize) -> String {
+    pub fn format_size(size_in_bytes: usize) -> String {
         const KILOBYTE: usize = 1024;
         const MEGABYTE: usize = KILOBYTE * 1024;
         const GIGABYTE: usize = MEGABYTE * 1024;

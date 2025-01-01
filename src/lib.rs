@@ -8,5 +8,5 @@ mod file_validator;
 pub use data_input::DataInput;
 pub use file_input::FileInput;
 pub use multipart::Multipart;
-pub use result::{MultipartError, MultipartValidationError};
-pub use file_validator::FileValidationRules;
+pub use result::MultipartError;
+pub use file_validator::{FileRules, RequestRules, Validator};
