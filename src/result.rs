@@ -7,9 +7,10 @@ pub type MultipartResult<T> = Result<T, MultipartError>;
 
 #[derive(Debug)]
 pub enum MultipartError {
-    IoError(Error),
     NoFile,
+    IoError(Error),
     NoContentType(String),
+    MissingDataField(String),
     InvalidContentDisposition(String),
     NtexError(ntex_multipart::MultipartError),
     ValidationError(InputError),
@@ -29,6 +30,9 @@ impl Display for MultipartError {
             }
             MultipartError::NoFile => {
                 write!(f, "No file was uploaded")
+            }
+            MultipartError::MissingDataField(ct) => {
+                write!(f, "Data field '{}' is required", ct)
             }
             MultipartError::NoContentType(ct) => {
                 write!(f, "Invalid content type: {}", ct)
