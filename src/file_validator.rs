@@ -188,10 +188,16 @@ impl Validator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{MultipartError};
+    use crate::MultipartError;
 
     // Helper function to create a file input
-    fn create_file_input(field_name: &str, file_name: &str, size: usize, extension: Option<&str>, content_type: &str) -> FileInput {
+    fn create_file_input(
+        field_name: &str,
+        file_name: &str,
+        size: usize,
+        extension: Option<&str>,
+        content_type: &str,
+    ) -> FileInput {
         FileInput {
             field_name: field_name.to_string(),
             file_name: file_name.to_string(),
@@ -204,10 +210,13 @@ mod tests {
 
     #[test]
     fn test_validate_required_files_missing() {
-        let validator = Validator::new().add_rule("file_field", FileRules {
-            required: true,
-            ..Default::default()
-        });
+        let validator = Validator::new().add_rule(
+            "file_field",
+            FileRules {
+                required: true,
+                ..Default::default()
+            },
+        );
 
         let mut files = HashMap::new();
         files.insert("file_field".to_string(), vec![]);
@@ -222,10 +231,13 @@ mod tests {
 
     #[test]
     fn test_validate_required_files_present() {
-        let validator = Validator::new().add_rule("file_field", FileRules {
-            required: true,
-            ..Default::default()
-        });
+        let validator = Validator::new().add_rule(
+            "file_field",
+            FileRules {
+                required: true,
+                ..Default::default()
+            },
+        );
 
         let mut files = HashMap::new();
         let file = create_file_input("file_field", "test.jpg", 500, Some("jpg"), "image/jpeg");
@@ -238,10 +250,13 @@ mod tests {
 
     #[test]
     fn test_validate_file_size_too_small() {
-        let validator = Validator::new().add_rule("file_field", FileRules {
-            min_size: Some(1024),
-            ..Default::default()
-        });
+        let validator = Validator::new().add_rule(
+            "file_field",
+            FileRules {
+                min_size: Some(1024),
+                ..Default::default()
+            },
+        );
 
         let mut files = HashMap::new();
         let file = create_file_input("file_field", "test.jpg", 500, Some("jpg"), "image/jpeg");
@@ -257,11 +272,14 @@ mod tests {
 
     #[test]
     fn test_validate_file_size_ok() {
-        let validator = Validator::new().add_rule("file_field", FileRules {
-            min_size: Some(100),
-            max_size: Some(1024),
-            ..Default::default()
-        });
+        let validator = Validator::new().add_rule(
+            "file_field",
+            FileRules {
+                min_size: Some(100),
+                max_size: Some(1024),
+                ..Default::default()
+            },
+        );
 
         let mut files = HashMap::new();
         let file = create_file_input("file_field", "test.jpg", 500, Some("jpg"), "image/jpeg");
@@ -274,10 +292,13 @@ mod tests {
 
     #[test]
     fn test_validate_file_extension_invalid() {
-        let validator = Validator::new().add_rule("file_field", FileRules {
-            allowed_extensions: Some(vec!["jpg", "png"]),
-            ..Default::default()
-        });
+        let validator = Validator::new().add_rule(
+            "file_field",
+            FileRules {
+                allowed_extensions: Some(vec!["jpg", "png"]),
+                ..Default::default()
+            },
+        );
 
         let mut files = HashMap::new();
         let file = create_file_input("file_field", "test.txt", 500, Some("txt"), "image/jpeg");
@@ -287,16 +308,22 @@ mod tests {
 
         assert!(result.is_err());
         if let Err(MultipartError::ValidationError(InputError { error, .. })) = result {
-            assert_eq!(error, ErrorMessage::InvalidFileExtension(Some("txt".to_string())));
+            assert_eq!(
+                error,
+                ErrorMessage::InvalidFileExtension(Some("txt".to_string()))
+            );
         }
     }
 
     #[test]
     fn test_validate_file_extension_valid() {
-        let validator = Validator::new().add_rule("file_field", FileRules {
-            allowed_extensions: Some(vec!["jpg", "png"]),
-            ..Default::default()
-        });
+        let validator = Validator::new().add_rule(
+            "file_field",
+            FileRules {
+                allowed_extensions: Some(vec!["jpg", "png"]),
+                ..Default::default()
+            },
+        );
 
         let mut files = HashMap::new();
         let file = create_file_input("file_field", "test.jpg", 500, Some("jpg"), "image/jpeg");
@@ -309,13 +336,22 @@ mod tests {
 
     #[test]
     fn test_validate_content_type_invalid() {
-        let validator = Validator::new().add_rule("file_field", FileRules {
-            allowed_content_types: Some(vec!["image/jpeg", "image/png"]),
-            ..Default::default()
-        });
+        let validator = Validator::new().add_rule(
+            "file_field",
+            FileRules {
+                allowed_content_types: Some(vec!["image/jpeg", "image/png"]),
+                ..Default::default()
+            },
+        );
 
         let mut files = HashMap::new();
-        let file = create_file_input("file_field", "test.jpg", 500, Some("jpg"), "application/pdf");
+        let file = create_file_input(
+            "file_field",
+            "test.jpg",
+            500,
+            Some("jpg"),
+            "application/pdf",
+        );
         files.insert("file_field".to_string(), vec![file]);
 
         let result = validator.validate(&files);
@@ -328,10 +364,13 @@ mod tests {
 
     #[test]
     fn test_validate_file_count_too_few() {
-        let validator = Validator::new().add_rule("file_field", FileRules {
-            min_files: Some(2),
-            ..Default::default()
-        });
+        let validator = Validator::new().add_rule(
+            "file_field",
+            FileRules {
+                min_files: Some(2),
+                ..Default::default()
+            },
+        );
 
         let mut files = HashMap::new();
         let file = create_file_input("file_field", "test.jpg", 500, Some("jpg"), "image/jpeg");
@@ -347,10 +386,13 @@ mod tests {
 
     #[test]
     fn test_validate_file_count_too_many() {
-        let validator = Validator::new().add_rule("file_field", FileRules {
-            max_files: Some(1),
-            ..Default::default()
-        });
+        let validator = Validator::new().add_rule(
+            "file_field",
+            FileRules {
+                max_files: Some(1),
+                ..Default::default()
+            },
+        );
 
         let mut files = HashMap::new();
         let file1 = create_file_input("file_field", "test1.jpg", 500, Some("jpg"), "image/jpeg");
@@ -367,11 +409,14 @@ mod tests {
 
     #[test]
     fn test_validate_file_count_ok() {
-        let validator = Validator::new().add_rule("file_field", FileRules {
-            max_files: Some(2),
-            min_files: Some(1),
-            ..Default::default()
-        });
+        let validator = Validator::new().add_rule(
+            "file_field",
+            FileRules {
+                max_files: Some(2),
+                min_files: Some(1),
+                ..Default::default()
+            },
+        );
 
         let mut files = HashMap::new();
         let file1 = create_file_input("file_field", "test1.jpg", 500, Some("jpg"), "image/jpeg");
