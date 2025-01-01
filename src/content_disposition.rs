@@ -75,7 +75,6 @@ impl ContentDisposition {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -125,13 +124,20 @@ mod tests {
     // Test for parsing a content disposition string with multiple parameters
     #[test]
     fn test_parse_multiple_parameters() {
-        let content_disposition = "form-data; name=\"file\"; filename=\"example.txt\"; another_param=\"value\"";
+        let content_disposition =
+            "form-data; name=\"file\"; filename=\"example.txt\"; another_param=\"value\"";
         let result = ContentDisposition::parse(content_disposition);
 
         // Check variables map is correctly populated
         assert_eq!(result.variables.get("name"), Some(&"file".to_string()));
-        assert_eq!(result.variables.get("filename"), Some(&"example.txt".to_string()));
-        assert_eq!(result.variables.get("another_param"), Some(&"value".to_string()));
+        assert_eq!(
+            result.variables.get("filename"),
+            Some(&"example.txt".to_string())
+        );
+        assert_eq!(
+            result.variables.get("another_param"),
+            Some(&"value".to_string())
+        );
 
         // Check file and name field presence
         assert!(result.is_file_field);
@@ -159,7 +165,10 @@ mod tests {
         let result = ContentDisposition::parse(content_disposition);
 
         // Check variables map is correctly populated
-        assert_eq!(result.variables.get("filename"), Some(&"example.txt".to_string()));
+        assert_eq!(
+            result.variables.get("filename"),
+            Some(&"example.txt".to_string())
+        );
 
         // Check file and name field presence
         assert!(result.is_file_field);
@@ -188,7 +197,10 @@ mod tests {
 
         // Check that variables are parsed correctly, without quotes
         assert_eq!(result.variables.get("name"), Some(&"some name".to_string()));
-        assert_eq!(result.variables.get("filename"), Some(&"test.txt".to_string()));
+        assert_eq!(
+            result.variables.get("filename"),
+            Some(&"test.txt".to_string())
+        );
 
         // Check file and name field presence
         assert!(result.is_file_field);
@@ -227,6 +239,9 @@ mod tests {
 
         // Check that values are parsed correctly with extra spaces
         assert_eq!(result.variables.get("name"), Some(&"file".to_string()));
-        assert_eq!(result.variables.get("filename"), Some(&"example.txt".to_string()));
+        assert_eq!(
+            result.variables.get("filename"),
+            Some(&"example.txt".to_string())
+        );
     }
 }
