@@ -41,10 +41,10 @@ pub struct FileRules {
     pub max_size: Option<usize>,
 
     /// Allowed file extensions
-    pub allowed_extensions: Option<Vec<&'static str>>,
+    pub allowed_extensions: Option<Vec<String>>,
 
     /// Allowed content types
-    pub allowed_content_types: Option<Vec<&'static str>>,
+    pub allowed_content_types: Option<Vec<String>>,
 
     /// Min number of files, this only works when validating through `Multipart` struct
     pub min_files: Option<usize>,
@@ -154,7 +154,7 @@ impl Validator {
         // Validate file extension
         if let Some(allowed_extensions) = &rule.allowed_extensions {
             if let Some(extension) = &file.extension {
-                if !allowed_extensions.contains(&&*extension.to_lowercase()) {
+                if !allowed_extensions.contains(&extension.to_lowercase()) {
                     return Err(InputError {
                         name: file.field_name.to_string(),
                         error: ErrorMessage::InvalidFileExtension(file.extension.clone()),
@@ -170,7 +170,7 @@ impl Validator {
 
         // Validate content type
         if let Some(allowed_content_types) = &rule.allowed_content_types {
-            if !allowed_content_types.contains(&&*file.content_type.to_lowercase()) {
+            if !allowed_content_types.contains(&file.content_type.to_lowercase()) {
                 return Err(InputError {
                     name: file.field_name.to_string(),
                     error: ErrorMessage::InvalidContentType(format!(
@@ -295,7 +295,7 @@ mod tests {
         let validator = Validator::new().add_rule(
             "file_field",
             FileRules {
-                allowed_extensions: Some(vec!["jpg", "png"]),
+                allowed_extensions: Some(vec!["jpg".to_string(), "png".to_string()]),
                 ..Default::default()
             },
         );
@@ -320,7 +320,7 @@ mod tests {
         let validator = Validator::new().add_rule(
             "file_field",
             FileRules {
-                allowed_extensions: Some(vec!["jpg", "png"]),
+                allowed_extensions: Some(vec!["jpg".to_string(), "png".to_string()]),
                 ..Default::default()
             },
         );
@@ -339,7 +339,7 @@ mod tests {
         let validator = Validator::new().add_rule(
             "file_field",
             FileRules {
-                allowed_content_types: Some(vec!["image/jpeg", "image/png"]),
+                allowed_content_types: Some(vec!["image/jpeg".to_string(), "image/png".to_string()]),
                 ..Default::default()
             },
         );
